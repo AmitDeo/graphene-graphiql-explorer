@@ -9,13 +9,14 @@ import { makeDefaultArg, getDefaultScalarArgValue } from "./CustomArgs";
 import "graphiql/graphiql.css";
 import "./App.css";
 
-const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') && document.querySelector('[name=csrfmiddlewaretoken]').value;
 
 function fetcher(params, opts) {
   if (typeof opts === "undefined") {
     opts = {};
   }
   var headers = opts.headers || {};
+
   headers["Accept"] = headers["Accept"] || "application/json";
   headers["Content-Type"] = headers["Content-Type"] || "application/json";
   headers["X-CSRFToken"] = headers["X-CSRFToken"] || csrftoken;
@@ -68,9 +69,11 @@ class App extends Component {
   };
 
   componentDidMount() {
-    fetcher({
-      query: getIntrospectionQuery(),
-    }).then((result) => {
+    const headers = isValidJSON(this.state.headersText) ?  JSON.parse(this.state.headersText): {};
+    fetcher(
+        {query: getIntrospectionQuery(),},
+        {headers: headers}
+      ).then((result) => {
       const editor = this._graphiql.getQueryEditor();
       editor.setOption("extraKeys", {
         ...(editor.options.extraKeys || {}),
